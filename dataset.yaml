@@ -1,0 +1,12 @@
+path: CHV_dataset
+train: images\train
+val: images\val
+test: images\test
+
+names:
+   0 : person
+   1 : vest
+   2 : blue helmet
+   3 : red helmet
+   4 : white helmet
+   5 : yellow helmet
