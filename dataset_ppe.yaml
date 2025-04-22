@@ -1,0 +1,12 @@
+path: ppe
+train: images/train
+val: images/val
+
+names:
+   0 : person
+   1 : vest
+   2 : helmet
+   # 2 : blue helmet
+   # 3 : red helmet
+   # 4 : white helmet
+   # 5 : yellow helmet
