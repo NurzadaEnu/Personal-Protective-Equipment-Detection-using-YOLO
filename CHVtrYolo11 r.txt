@@ -1,0 +1,44 @@
+Yolov11s
+169 epochs completed in 0.499 hours.
+Optimizer stripped from runs/train6/weights/last.pt, 19.2MB
+Optimizer stripped from runs/train6/weights/best.pt, 19.2MB
+
+Validating runs/train6/weights/best.pt...
+Ultralytics 8.3.54 🚀 Python-3.12.4 torch-2.4.1+cu121 CUDA:0 (Quadro RTX 6000, 24024MiB)
+                                                      CUDA:1 (Quadro RTX 6000, 24024MiB)
+                                                      CUDA:2 (Quadro RTX 6000, 24024MiB)
+                                                      CUDA:3 (Quadro RTX 6000, 24024MiB)
+YOLO11s summary (fused): 238 layers, 9,415,122 parameters, 0 gradients, 21.3 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 34/34 [00:02<00:00, 15.31it/s]
+                   all        266       2001      0.867      0.812      0.856      0.496
+                person        264        837      0.879      0.817      0.873      0.511
+                  vest        137        388      0.839      0.807      0.855      0.483
+           blue helmet         54         93      0.901      0.782      0.823      0.487
+            red helmet         57         98       0.82      0.816      0.849      0.494
+          white helmet        111        275      0.881      0.811      0.867       0.51
+         yellow helmet        141        310      0.879      0.839      0.872      0.488
+Speed: 0.2ms preprocess, 2.3ms inference, 0.0ms loss, 2.0ms postprocess per image
+Results saved to runs/train6
+
+Yolov11s-R3
+
+203 epochs completed in 0.682 hours.
+Optimizer stripped from runs/train4/weights/last.pt, 25.8MB
+Optimizer stripped from runs/train4/weights/best.pt, 25.8MB
+
+Validating runs/train4/weights/best.pt...
+Ultralytics 8.3.54 🚀 Python-3.12.4 torch-2.4.1+cu121 CUDA:0 (Quadro RTX 6000, 24024MiB)
+                                                      CUDA:1 (Quadro RTX 6000, 24024MiB)
+                                                      CUDA:2 (Quadro RTX 6000, 24024MiB)
+                                                      CUDA:3 (Quadro RTX 6000, 24024MiB)
+YOLO11s summary (fused): 327 layers, 12,657,628 parameters, 0 gradients, 31.2 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 34/34 [00:02<00:00, 12.36it/s]
+                   all        266       2001      0.894      0.809      0.873      0.508
+                person        264        837      0.894      0.807      0.883      0.515
+                  vest        137        388      0.848      0.812      0.832      0.478
+           blue helmet         54         93      0.938      0.753      0.855      0.492
+            red helmet         57         98      0.837      0.816       0.89      0.515
+          white helmet        111        275      0.938      0.821      0.892      0.545
+         yellow helmet        141        310      0.908      0.845      0.887      0.501
+Speed: 0.2ms preprocess, 5.2ms inference, 0.0ms loss, 0.6ms postprocess per image
+Results saved to runs/train4
