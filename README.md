@@ -1,7 +1,7 @@
 YOLOv11-Refine PPE Detection (CHV)
 
 Paper: A PPE Detection Method Based on the Advanced YOLOv11 Architecture with a Three-Stage Refine Block System* (Sustainability, 2025)  
-Dataset: CHV – Construction Helmet & Vest  
+Dataset: CHV – Construction Helmet & Vest  https://github.com/ZijianWang1995/ppe_detection
 
 Model Overview
 YOLOv11-Refine introduces three refinement stages (R1–R3) to enhance multi-scale feature fusion and improve detection of small PPE elements (helmets, vests).  
