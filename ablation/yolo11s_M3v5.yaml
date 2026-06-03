@@ -1,0 +1,65 @@
+# YOLOv11s + R1 + P2-only refiner (M3v5)
+#
+# Final conservative variant:
+# - Keep the proven R1 top-down extension to P2.
+# - Keep the stock YOLOv11 PAN for P3/P4/P5.
+# - Add only one lightweight refiner on P2 before Detect.
+#
+# Motivation:
+# Previous M3v2/M3v3/M3v4 variants improved recall/precision but hurt mAP@50-95
+# once R3 was widened or deep scales were over-processed. This version avoids
+# touching P4/P5 refinement and limits the extra capacity to the smallest scale.
+
+nc: 80
+scales:
+  n: [0.50, 0.25, 1024]
+  s: [0.50, 0.50, 1024]
+  m: [0.50, 1.00, 512]
+  l: [1.00, 1.00, 512]
+  x: [1.00, 1.50, 512]
+
+backbone:
+  # Backbone unchanged.
+  - [-1, 1, Conv, [64, 3, 2]]              # 0  P1/2
+  - [-1, 1, Conv, [128, 3, 2]]             # 1  P2/4
+  - [-1, 2, C3k2, [256, False, 0.25]]      # 2
+  - [-1, 1, Conv, [256, 3, 2]]             # 3  P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]]      # 4
+  - [-1, 1, Conv, [512, 3, 2]]             # 5  P4/16
+  - [-1, 2, C3k2, [512, True]]             # 6
+  - [-1, 1, Conv, [1024, 3, 2]]            # 7  P5/32
+  - [-1, 2, C3k2, [1024, True]]            # 8
+  - [-1, 1, SPPF, [1024, 5]]               # 9
+  - [-1, 2, C2PSA, [1024]]                 # 10
+
+head:
+  # FPN P5 -> P4
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 11
+  - [[-1, 6], 1, Concat, [1]]                     # 12
+  - [-1, 2, C3k2, [512, False]]                   # 13  FPN-P4
+
+  # FPN P4 -> P3
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 14
+  - [[-1, 4], 1, Concat, [1]]                     # 15
+  - [-1, 2, C3k2, [256, False]]                   # 16  FPN-P3
+
+  # R1: P3 -> P2 recovery
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 17
+  - [[-1, 2], 1, Concat, [1]]                     # 18
+  - [-1, 1, C3k2, [96, False]]                    # 19  FPN-P2
+
+  # Stock PAN (unchanged): starts from P3
+  - [16, 1, Conv, [256, 3, 2]]                    # 20
+  - [[-1, 13], 1, Concat, [1]]                    # 21
+  - [-1, 2, C3k2, [512, False]]                   # 22  PAN-P4
+
+  - [-1, 1, Conv, [512, 3, 2]]                    # 23
+  - [[-1, 10], 1, Concat, [1]]                    # 24
+  - [-1, 2, C3k2, [1024, True]]                   # 25  PAN-P5
+
+  # R3v5: one lightweight refiner only on P2.
+  # Deeper scales are left untouched to preserve localization quality.
+  - [19, 1, C2f, [96, False]]                     # 26  P2 refiner
+
+  - [[26, 16, 22, 25], 1, Detect, [nc]]           # Detect(P2, P3, P4, P5)
+

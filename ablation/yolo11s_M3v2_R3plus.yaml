@@ -1,0 +1,66 @@
+# YOLOv11s + R1 + R2 + R3' (M3v2)
+# Single, minimal change vs M3: R3 refiners are now 2-repeat C2f with shortcut=True
+# instead of 1-repeat without shortcut. Everything else identical to M3.
+#
+# Rationale: the multi-seed analysis of M3 showed per-class mAP@50-95 degradation
+# on every class. The diagnosis (M1 alone is significantly worse than baseline)
+# points to R1 introducing localisation noise that downstream R3 must absorb.
+# Single-rep C2f without residual has insufficient capacity for that compensation.
+# This config tests whether 2x depth + residual learning in R3 is enough.
+
+nc: 80
+scales:
+  n: [0.50, 0.25, 1024]
+  s: [0.50, 0.50, 1024]
+  m: [0.50, 1.00, 512]
+  l: [1.00, 1.00, 512]
+  x: [1.00, 1.50, 512]
+
+backbone:
+  - [-1, 1, Conv, [64, 3, 2]]              # 0  P1/2
+  - [-1, 1, Conv, [128, 3, 2]]             # 1  P2/4
+  - [-1, 2, C3k2, [256, False, 0.25]]      # 2
+  - [-1, 1, Conv, [256, 3, 2]]             # 3  P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]]      # 4
+  - [-1, 1, Conv, [512, 3, 2]]             # 5  P4/16
+  - [-1, 2, C3k2, [512, True]]             # 6
+  - [-1, 1, Conv, [1024, 3, 2]]            # 7  P5/32
+  - [-1, 2, C3k2, [1024, True]]            # 8
+  - [-1, 1, SPPF, [1024, 5]]               # 9
+  - [-1, 2, C2PSA, [1024]]                 # 10
+
+head:
+  # FPN top-down
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 11
+  - [[-1, 6], 1, Concat, [1]]                     # 12
+  - [-1, 2, C3k2, [512, False]]                   # 13  FPN-P4
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 14
+  - [[-1, 4], 1, Concat, [1]]                     # 15
+  - [-1, 2, C3k2, [256, False]]                   # 16  FPN-P3
+
+  # R1 — P3 -> P2 (top-down)
+  - [16, 1, nn.Upsample, [None, 2, "nearest"]]   # 17
+  - [[-1, 2], 1, Concat, [1]]                     # 18
+  - [-1, 1, C3k2, [96, False]]                    # 19  FPN-P2 (R1)
+
+  # R2 — bottom-up PAN starting at P2
+  - [-1, 1, Conv, [96, 3, 2]]                     # 20
+  - [[-1, 16], 1, Concat, [1]]                    # 21
+  - [-1, 2, C3k2, [256, False]]                   # 22  PAN-P3
+
+  - [-1, 1, Conv, [256, 3, 2]]                    # 23
+  - [[-1, 13], 1, Concat, [1]]                    # 24
+  - [-1, 2, C3k2, [512, False]]                   # 25  PAN-P4
+
+  - [-1, 1, Conv, [512, 3, 2]]                    # 26
+  - [[-1, 10], 1, Concat, [1]]                    # 27
+  - [-1, 2, C3k2, [1024, True]]                   # 28  PAN-P5
+
+  # R3' — STRONGER refiners: 2 repetitions, shortcut=True (the only change vs M3)
+  - [19, 2, C2f, [96, True]]                      # 29  R3' on P2
+  - [22, 2, C2f, [256, True]]                     # 30  R3' on P3
+  - [25, 2, C2f, [512, True]]                     # 31  R3' on P4
+  - [28, 2, C2f, [1024, True]]                    # 32  R3' on P5
+
+  - [[29, 30, 31, 32], 1, Detect, [nc]]
